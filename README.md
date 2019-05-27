@@ -26,7 +26,13 @@ export default {
 	}
 }
 ```
+## 效果图：
+![效果图](https://github.com/193335083/uni-app-reserve-date/blob/master/static/imgs/a6646f10-7f07-11e9-82ed-e71b5443f738_1.png?raw=true)
+![效果图](https://github.com/193335083/uni-app-reserve-date/blob/master/static/imgs/a6646f10-7f07-11e9-82ed-e71b5443f738_0.png?raw=true)
    
+
+---
+	 
 ## reserve-date属性   
    
 | 属性名 | 类型 | 默认值 | 说明 |

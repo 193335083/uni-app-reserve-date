@@ -22,7 +22,7 @@
 				 @click="ChoiceDate(index, val.disable)" :key='index'>
 					<view class="border">
 						<text class="day">{{val.day}}</text>
-						<text class="price" v-show="val.priceType">{{val.price}}￥</text>
+						<text class="price" v-show="val.priceType">{{val.price == undefined ? '' : val.price}}￥</text>
 					</view>
 				</view>
 			</view>
@@ -74,19 +74,32 @@
 					return {type: false, data: []}
 				}
 			},
+			// 是否选择默认日期
 			isNowDate: {
 				type: Boolean,
 				default: true
+			},
+			// 单选或多选
+			singleElection: {
+				type: Boolean,
+				default: true
+			}
+		},
+		computed: {
+			PriceData: {
+				get() {
+					return this.price.data
+				}
 			}
 		},
 		created() {
 			let dateArr = this.date.split('-')
 			if (this.date != '' && dateArr.length == 3) {
 				// 初始化年月日
-				this.year = dateArr[0]
-				this.month = dateArr[1]
-				this.day = dateArr[2]
-
+				
+				this.year = Number(dateArr[0])
+				this.month = Number(dateArr[1])
+				this.day = Number(dateArr[2])
 				this.InitializationHomeDate().then((val) => {
 					this.Preprocessing(dateArr)
 				})
@@ -107,28 +120,18 @@
 				let _date = new Date()
 				let currDate = this.compareDate(`${_date.getFullYear()}-${_date.getMonth() + 1}-${_date.getDate()}`)
 				return new Promise((resolve, reject) => {
-					// 是否显示当日选择
+					let judge = (this.disableBefore == false && this.startDate == '' && this.endDate == '') || // 没有任何禁止
+											(this.disableBefore == true && ThisDate >= currDate) || // 是否禁用今天之前的日期
+											(ThisDate >= startDate && this.disableBefore == false && this.startDate != '') || // 禁用只有开始时间，没有结束时间
+											(ThisDate <= endDate && this.disableBefore == false && this.endDate != '') || // 禁用只有结束时间，没有开始时间
+											(ThisDate <= endDate && this.disableBefore == false && ThisDate >= startDate && this.startDate != '' &&this.endDate != '') // 禁用结束时间，开始时间
 					if (this.isNowDate == false) {
 						resolve(true)
 						return false
-						// 没有任何禁止
-					} else if (this.disableBefore == false && this.startDate == '' && this.endDate == '') {
+					} else if (judge) {
 						this.storageDate.push({date: this.date})
-						// 是否禁用今天之前的日期
-					} else if (this.disableBefore == true && ThisDate >= currDate) {
-						this.storageDate.push({date: this.date})
-						// 禁用只有开始时间，没有结束时间
-					} else if (ThisDate >= startDate && this.disableBefore == false && this.startDate != '') {
-						this.storageDate.push({date: this.date})
-						// 禁用只有结束时间，没有开始时间
-					} else if (ThisDate <= endDate && this.disableBefore == false && this.endDate != '') {
-						this.storageDate.push({date: this.date})
-						// 禁用结束时间，开始时间
-					} else if (ThisDate <= endDate && this.disableBefore == false && ThisDate >= startDate && this.startDate != '' &&
-						this.endDate != '') {
-						this.storageDate.push({date: this.date})
+						resolve(true)
 					}
-					resolve(true)
 				})
 			},
 			// 时间转换为时间戳
@@ -139,33 +142,49 @@
 			},
 			// 上一个月
 			prevDeta() {
+				let dateLen = new Date(this.year, this.month - 1, 0).getDate()
 				this.month = Number(this.month) - 1
 				if (this.month == 0) {
 					this.month = 12
 					this.year = Number(this.year) - 1
 				}
 				this.Preprocessing([this.year, this.month, this.day])
+				this.$emit('changeMonth', [this.year, this.month, dateLen])
 			},
 			// 下一个月
 			nextDate() {
+				let dateLen = new Date(this.year, this.month - 1, 0).getDate()
 				this.month = 1 + Number(this.month)
 				if (this.month == 13) {
 					this.month = 1
 					this.year = 1 + Number(this.year)
 				}
 				this.Preprocessing([this.year, this.month, this.day])
+				this.$emit('changeMonth', [this.year, this.month, dateLen])
 			},
 			// 数据发布
 			ChoiceDate(index, disable) {
 				let day = this.swiperData.dateDay[index].day
 				let _Choice = this.swiperData.dateDay[index].Choice
-				let _date = {date: `${this.swiperData.year}-${this.swiperData.month}-${day}`, price:  this.swiperData.dateDay[index].price}
+				let _date = {}
+				if (this.price.type == true) {
+					_date = {date: `${this.swiperData.year}-${this.swiperData.month}-${day}`, price:  this.swiperData.dateDay[index].price}
+				} else {
+					_date = {date: `${this.swiperData.year}-${this.swiperData.month}-${day}`}
+				}
 				if (disable != true) {
-					this.swiperData.dateDay[index].Choice = !_Choice
 					// 添加数据
 					if (JSON.stringify(this.storageDate).indexOf(_date.date) == -1) {
+						// 单选还是多选
+						if (this.singleElection == true) {
+							this.storageDate = []
+							this.swiperData.dateDay.forEach((val, inde) => {
+								val.Choice = false
+							})
+						// 多选
+						}
 						this.storageDate.push(_date)
-						// 删除数据
+					// 删除数据
 					} else {
 						this.storageDate = this.storageDate.filter((val, index) => {
 							if (val.date != _date.date) {
@@ -173,7 +192,8 @@
 							}
 						})
 					}
-					this.$emit('change', this.storageDate)
+					this.swiperData.dateDay[index].Choice = !_Choice
+					this.$emit('changeDay', this.storageDate)
 				}
 			},
 			// 日期初始化
@@ -181,7 +201,7 @@
 				let swiperData = {}
 				this.getDay(`${arr[0]}-${arr[1]}-${arr[2]}`).then((val) => {
 					swiperData = val
-					this.$emit('change', this.storageDate)
+					this.$emit('changeDay', this.storageDate)
 					this.$set(this, 'swiperData', swiperData)
 				})
 			},
@@ -369,6 +389,17 @@
 		},
 		components: {
 			uniIcon
+		},
+		watch: {
+			'PriceData': {
+				handler(newData, oldData) {
+					this.InitializationHomeDate().then((val) => {
+						this.Preprocessing([this.year, this.month, this.day])
+					})
+				},
+				immediate: false,
+				deep: true
+			}
 		}
 	}
 </script>

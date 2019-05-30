@@ -37,5 +37,9 @@
             "urlCheck" : false
         },
         "usingComponents" : true
+    },
+    "h5" : {
+        "title" : "预览",
+        "domain" : "haoxtzj.com/uni-app-reserve-date"
     }
 }

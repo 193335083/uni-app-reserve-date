@@ -1,6 +1,6 @@
 <template>
 	<view class="content">
-		<reserve-date @change='change' :startDate='startDate' :price='price' :isNowDate='isNowDate' :disableBefore='disableBefore' :endDate='endDate'/>
+		<reserve-date @changeDay='changeDay' @changeMonth='changeMonth' :startDate='startDate' :price='price' :isNowDate='isNowDate' :disableBefore='disableBefore' :endDate='endDate' :singleElection='singleElection'/>
 	</view>
 </template>
 
@@ -9,25 +9,41 @@
 	export default {
 		data() {
 			return {
-				price: {
-					type: true,
-					data: []
+				price: { 
+					type: true, 
+					data: [] 
 				},
 				isNowDate: true,
-				disableBefore: true,
-				endDate: '2019-5-26',
-				startDate: '2019-5-15'
+				disableBefore: false,
+				endDate: '',
+				startDate: '',
+				singleElection: false
 			}
 		},
 		mounted() {
-			for (var i = 0; i < 31; i++) {
-				let price = parseInt(Math.random() * 1000)
-				this.price.data.push(price)
-			}
+			this.changeMonth(['','', 31])
 		},
 		methods: {
-			change(date) {
+			// 日期改变
+			changeDay(date) {
 				console.log(date)
+			},
+			// 月改变
+			changeMonth(data) {
+				uni.showLoading({
+					title: '加载中',
+					mask: true
+				})
+				let price = []
+				setTimeout(() => {
+					this.price.data = []
+					for(let i = 0; i < data[2]; i++) {
+						price.push(parseInt(Math.random() * 1000))
+					}
+					console.log(price)
+					this.price.data = price
+					uni.hideLoading()
+				},1500)
 			}
 		},
 		components: {
@@ -35,8 +51,3 @@
 		}
 	}
 </script>
-
-
-<style lang="scss" scoped>
-
-</style>

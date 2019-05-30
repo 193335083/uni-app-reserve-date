@@ -96,11 +96,10 @@
 			let dateArr = this.date.split('-')
 			if (this.date != '' && dateArr.length == 3) {
 				// 初始化年月日
-				
 				this.year = Number(dateArr[0])
 				this.month = Number(dateArr[1])
 				this.day = Number(dateArr[2])
-				this.InitializationHomeDate().then((val) => {
+				this.InitializationHomeDate(true).then((val) => {
 					this.Preprocessing(dateArr)
 				})
 			} else {
@@ -109,7 +108,7 @@
 		},
 		methods: {
 			// 是否添加初始化日期
-			InitializationHomeDate() {
+			InitializationHomeDate(type) {
 				// 指定日期
 				let ThisDate = this.compareDate(this.date)
 				// 禁用开始时间
@@ -128,10 +127,10 @@
 					if (this.isNowDate == false) {
 						resolve(true)
 						return false
-					} else if (judge) {
+					} else if (judge && type) {
 						this.storageDate.push({date: this.date})
-						resolve(true)
 					}
+					resolve(true)
 				})
 			},
 			// 时间转换为时间戳
@@ -149,7 +148,9 @@
 					this.year = Number(this.year) - 1
 				}
 				this.Preprocessing([this.year, this.month, this.day])
-				this.$emit('changeMonth', [this.year, this.month, dateLen])
+				if (this.price.type) {
+					this.$emit('changeMonth', [this.year, this.month, dateLen])
+				}
 			},
 			// 下一个月
 			nextDate() {
@@ -160,7 +161,9 @@
 					this.year = 1 + Number(this.year)
 				}
 				this.Preprocessing([this.year, this.month, this.day])
-				this.$emit('changeMonth', [this.year, this.month, dateLen])
+				if (this.price.type) {
+					this.$emit('changeMonth', [this.year, this.month, dateLen])
+				}
 			},
 			// 数据发布
 			ChoiceDate(index, disable) {
@@ -393,7 +396,7 @@
 		watch: {
 			'PriceData': {
 				handler(newData, oldData) {
-					this.InitializationHomeDate().then((val) => {
+					this.InitializationHomeDate(false).then((val) => {
 						this.Preprocessing([this.year, this.month, this.day])
 					})
 				},

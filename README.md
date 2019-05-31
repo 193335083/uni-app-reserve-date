@@ -6,56 +6,24 @@ uni-app 日历组件，区间选择
 ## 回调函数示例：
 
 ``` html
-<template>
-	<view class="content">
-		<reserve-date @changeDay='changeDay' @changeMonth='changeMonth' :startDate='startDate' :price='price' :isNowDate='isNowDate' :disableBefore='disableBefore' :endDate='endDate' :singleElection='singleElection'/>
-	</view>
-</template>
+<reserve-date @changeDay='changeDay' />
 
 import reserveDate from '@/components/reserve-date/reserve-date.vue'
 export default {
-  data() {
-    return {
-        price: { 
-            type: true, 
-            data: [] 
-        },
-        isNowDate: true,
-        disableBefore: false,
-        endDate: '',
-        startDate: '',
-        singleElection: false
-    }
-  },
-  mounted() {
-    this.changeMonth(['','', 31])
-  },
-  methods: {
-    // 日期改变
-    changeDay(date) {
-      console.log(date)
-    },
-    // 月改变
-    changeMonth(data) {
-      uni.showLoading({
-        title: '加载中',
-        mask: true
-      })
-      let price = []
-      setTimeout(() => {
-        this.price.data = []
-        for(let i = 0; i < data[2]; i++) {
-            price.push(parseInt(Math.random() * 1000))
-        }
-        console.log(price)
-        this.price.data = price
-        uni.hideLoading()
-      },1500)
-    }
-  },
-  components: {
-    reserveDate
-  }
+	data() {
+		return {
+		}
+	},
+	mounted() {
+	},
+	methods: {
+		changeDay(data) {
+			console.log(data)
+		}
+	},
+	components: {
+		reserveDate
+	}
 }
 ```
 ---
